@@ -1,62 +1,161 @@
-float[] x, y, d, vx, vy;
-// x,y는 원의 중심 좌표, d는 원의 지름, vx는 x축 상에서의 이동속도, vy는 y축 상에서의 이동속도
+float[] x, y, d, vx, vy, bx, by, bd;
+int L = 5;
+int score = 0;
+
+void Player(float a, float b, float d) {
+    circle(a, b, d);
+}
+
+void bonus(float a, float b, float d) {
+    circle(a, b, d);
+}
+
 void setup() {
-    size(2000, 1400);
-    x = new float[5];  y = new float[5];  d = new float[5];
-    vx = new float[5];  vy = new float[5];
-    // 최초 1개의 적: i = 0
-    vx[0] = 5;    vy[0] = 5;
-    x[0] = 900;    y[0] = 200;    d[0] = 400;
-    // Player: i = 4
-    x[4] = 900;    y[4] = 800;    d[4] = 100;
-    for (int i = 0; i < 4; i++) {
-        // 부딪힐 때마다 속도와 크기 1/2만큼 변화
-        d[i] = d[i] / 2;
-        vx[i] = vx[i] * 2;
-        vy[i] = vy[i] * 2;
+    size(1500, 900);
+    x = new float[8]; y = new float[8]; d = new float[8];
+    vx = new float[8]; vy = new float[8];
+    bx = new float[10000];  by = new float[10000]; bd = new float[10000];
+    vx[0] = 0; vy[0] = 0;
+    x[0] = 750; y[0] = 450; d[0] = 50;
+    for (int i = 1; i < 8; i++) {
+        vx[i] = 3; vy[i] = 3;
+        x[i] = random(0, 1400); y[i] = random(0, 800); d[i] = 100;
+    }
+    for (int i = 1; i < 10000; i++) {
+        bx[i] = random(15, 1500 - 15);  by[i] = random(15, 900 - 15);  bd[i] = 30;
     }
 }
+
+boolean collide(float a, float b, float d) {
+    float D = dist(x[0], y[0], a, b);
+    if (D <= d / 2 + 25) return true;
+    else return false;
+}
+
+int count = 0;
 void draw() {
-    background(120);
-    fill(255, 0, 0);
-    for (int i = 0; i < 3; i++) {
+    if (L > 1) {
+        background(12, 194, 247);
+        fill(255, 255, 255, 255);
+        circle(40, 50, 50);
+        textSize(100);
+        text("x", 80, 75);
+        text(L, 130, 80);
+        textSize(100);
+        score = (count / 60) * 50;
+        count++;
+        text("Score: ", 1000, 80);
+        text(score, 1300, 80);
+    }
+    else if (L == 1) {
+        background(234, 12, 194, 0);
+        fill(255, 255, 255, 255);
+        circle(40, 50, 50);
+        textSize(100);
+        text("x", 80, 75);
+        text(L, 130, 80);
+        textSize(100);
+        score = (count / 60) * 50;
+        count++;
+        text("Score: ", 1000, 80);
+        text(score, 1300, 80);
+    }
+    fill(255, 0, 0, 230);
+    for (int i = 1; i < 8; i++) {
         x[i] += vx[i];
         y[i] += vy[i];
-        // 벽에 부딪히면 튕겨나온다
         Player(x[i], y[i], d[i]);
-        if (x[i]<0 || x[i]>width) vx[i] = -vx[i];
-        if (y[i]<0 || y[i]>height) vy[i] = -vy[i];
-        if (collide = true) {
-            d[i + 1] = d[i] / 2;
-            vx[i + 1] = vx[i] * 2;
-            vy[i + 1] = vy[i] * 2;
-            Player(x[i + 1], y[i + 1], d[i + 1]);
-            Player(x[i + 1], y[i + 1], d[i + 1]);
+        if (x[i] < 0 || x[i] > width) {
+            vx[i] *= -1;
+            vx[i] *= 1.05; vy[i] *= 1.05;
+            if (abs(vx[i]) > 10) {
+                vx[i] /= 2; vy[i] /= 2;
+            }
+        }
+        if (y[i] < 0 || y[i] > height) {
+            vy[i] *= -1;
+            vx[i] *= 1.05; vy[i] *= 1.05;
+            if (abs(vy[i]) > 10) {
+                vx[i] /= 2; vy[i] /= 2;
+            }
+        }
+        if (collide(x[i], y[i], d[i])) {
+            if (L > 0) {
+                L -= 1;
+                x[i] = random(0, 1400); y[i] = random(0, 800); d[i] = 100;
+            }
+            else break;
+        }
+        fill(255, 0, 0, 200);
+    }
+    if (L == 0) {
+        count *= 1;
+        background(255, 0, 0, 255);
+        fill(0, 0, 0, 255);
+
+        circle(40, 50, 50);
+        textSize(100);
+        text("x", 80, 75);
+        text("0", 130, 80);
+
+        textSize(100);
+        score = (count / 60) * 50;
+        count *= 1;
+        text("Score: ", 1000, 80);
+        text(score, 1300, 80);
+
+        textSize(200);
+        text("Game Over", 300, 300);
+        textSize(70);
+        text("Quit? => press ESC", 480, 800);
+        fill(random(0, 255), random(0, 255), random(0, 255), 255);
+        text("Restart? => press ENTER", 400, 600);
+
+    }
+    if (L != 0) {
+        fill(255);
+        Player(x[0], y[0], d[0]);
+    }
+    else if (L == 0) {
+        noStroke();
+        fill(234, 12, 194, 0);
+        Player(x[0], y[0], d[0]);
+    }
+    if (x[0] < 0) x[0] = width;
+    if (x[0] > width) x[0] = 0;
+    if (y[0] < 0) y[0] = height;
+    if (y[0] > height) y[0] = 0;
+    for (int i = 1; i < 8; i++) {
+        fill(random(0, 255), random(0, 255), random(0, 255), 255);
+        if (count < 600 * i) {
+            bonus(bx[i], by[i], bd[i]);
+            break;
+        }
+        if (collide(bx[i], by[i], bd[i])) {
+            bd[i] = 0;
+        }
+    }
+    for (int i = 0; i < 8; i++) {
+        if (collide(bx[i], by[i], bd[i])) {
+            bx[i] = 10000; by[i] = 10000;
+            L += 1;
         }
     }
     fill(255);
-    Player(x[4], y[4], d[4]);
-    if (x[4] < 0) x[4] = width;
-    if (x[4] > width) x[4] = 0;
-    if (y[4] < 0) y[4] = height;
-    if (y[4] > height) y[4] = 0;
 }
+
 void keyPressed() {
-    if (key == 'd') x[4] += 13;
-    else if (key == 'a') x[4] -= 13;
-    else if (key == 'w') y[4] -= 13;
-    else if (key == 's') y[4] += 13;
-}
-//움직이는 캐릭터
-boolean collide;
-void Player(float a, float b, float d) {
-    circle(a, b, d);
-    circle(a - 30, b - 20, d / 3);
-    circle(a + 30, b - 20, d / 3);
-    if (a - d < 0 || a + d > width || b - d < 0 || b + d > height) {
-        collide = true;
+    if (key == 'd') x[0] += 18;
+    else if (key == 'a') x[0] -= 18;
+    else if (key == 'w') y[0] -= 18;
+    else if (key == 's') y[0] += 18;
+    else if (key == ENTER) {
+        L = 5;
+        x[0] = 750; y[0] = 450;
+        count = 0;
+        for (int i = 1; i < 8; i++) {
+            vx[i] = 3; vy[i] = 3;
+        }
     }
-    else {
-        collide = false;
-    }
+    else if (key == ESC) exit();
 }
